@@ -34,13 +34,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -79,7 +83,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    PrincipalLayout()
+                    AppNavigation()
                 }
             }
         }
@@ -87,7 +91,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
-var Titulos = listOf("Terminar el diseño", "Jugar fortnite", "Jugar carreritas GTA")
+/*var Titulos = listOf("Terminar el diseño", "Jugar fortnite", "Jugar carreritas GTA")
 var Fechas = listOf("06-10-2024", "08-10-2024", "15-10-2024")
 
 @Composable
@@ -126,71 +130,73 @@ fun PrincipalLayout(){
 @Composable
 fun BoxTarea(
     Titulo : String,
-    Fecha : String // Cambiarlo despues por el parametro del DatePicker o algo asi
+    Fecha : String ,// Cambiarlo despues por el parametro del DatePicker o algo asi,
+    onCardClick: () -> Unit = {}
 )
 {
-    // Cada tarea individual
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(3.dp)
-            .border(
-                BorderStroke(2.dp, Color.Black),
-                shape = RoundedCornerShape(8.dp)
-            )
-    )
-    {
-        Column(modifier = Modifier.padding(20.dp))
-        {
-            Text(
-                text = Titulo,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = Fecha,
-                fontWeight = FontWeight.Light
-            )
-            OutlinedButton(
-                onClick = {},
-                modifier = Modifier
-                    .padding(10.dp)
-                    .align(Alignment.CenterHorizontally),
-            )
-            {
-                Text("Ver")
-            }
-        }
-        Row(modifier = Modifier
-            .padding(top = 20.dp)
-        )
-        {
-            // Boton para cancelar o borrar la tarea
-            OutlinedButton(
-                onClick = {},
-                modifier = Modifier
-                    .padding(10.dp)
-                    //.size(40.dp)
-            )
-            {
-                //Icon(Icons.Default.Delete)
-                Text("\uD83D\uDDD1")
-            }
-            // Boton para terminar la tarea (Algo como para marcar que esta listo)
-            OutlinedButton(
-                onClick = {},
-                modifier = Modifier
-                    .padding(10.dp)
-                    //.size(40.dp)
-            )
-            {
-                Text("✓")
+            .padding(8.dp)
+            .clickable { onCardClick() }, //Clicable
+        shape = RoundedCornerShape(16.dp), //Bordes redondeados
+        elevation = CardDefaults.cardElevation(8.dp) //Sombra a la Card
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = Titulo,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = Fecha,
+                    fontWeight = FontWeight.Light,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
 
-        }
 
-        Spacer(modifier = Modifier.height(100.dp))
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Botón para marcar la tarea como completada
+                IconButton(
+                    onClick = { /* Acción de marcar como completada */ },
+                    modifier = Modifier.size(50.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Done,
+                        contentDescription = "Marcar tarea como lista",
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                // Botón para eliminar la tarea
+                IconButton(
+                    onClick = { /* Acción de eliminar la tarea */ },
+                    modifier = Modifier.size(50.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar tarea",
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+            }
+        }
     }
+
 }
 
 @Composable
@@ -289,4 +295,4 @@ fun ProyectoFinalPreview() {
     ProyectoFinalTheme {
         PrincipalLayout()
     }
-}
+}*/

@@ -2,10 +2,13 @@
 
 package com.example.proyectofinal
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -70,11 +73,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.proyectofinal.ui.TareasNotasViewModel
 import com.example.proyectofinal.ui.theme.ProyectoFinalTheme
 import java.util.Date
 
 class MainActivity : ComponentActivity() {
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -89,6 +94,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
 
 /*var Titulos = listOf("Terminar el diseño", "Jugar fortnite", "Jugar carreritas GTA")

@@ -12,9 +12,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Composable
-fun BoxNota(Titulo: String, Contenido: String, onCardClick: () -> Unit, onDelete: () -> Unit) {
+fun BoxNota(
+    Titulo: String,
+    Fechacreacion: LocalDateTime,
+    Contenido: String,
+    onCardClick: () -> Unit,
+    onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

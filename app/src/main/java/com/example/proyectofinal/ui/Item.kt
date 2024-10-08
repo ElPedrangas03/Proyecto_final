@@ -1,11 +1,14 @@
 package com.example.proyectofinal.ui
 
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.UUID
 
 sealed class Item {
     data class Tarea(
         val titulo: String,
-        val fecha: String,
+        val fecha: LocalDateTime,
+        val fechaCreacion: LocalDateTime,
         var descripcion: String = "",
         val multimedia: List<MultimediaItem> = listOf(),
         val recordatorios: List<String> = listOf(),
@@ -14,6 +17,7 @@ sealed class Item {
 
     data class Nota(
         val titulo: String,
+        val fechaCreacion: LocalDateTime,
         val contenido: String = "",
         val multimedia: List<MultimediaItem> = listOf()
     ) : Item()

@@ -1,5 +1,7 @@
 package com.example.proyectofinal
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,7 +27,7 @@ import com.example.proyectofinal.ui.BotonFlotante
 import com.example.proyectofinal.ui.ItemLayout
 import com.example.proyectofinal.ui.TopBar
 
-@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -34,49 +36,21 @@ fun AppNavigation() {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Tareas", "Notas")
 
-    Scaffold(
-        topBar = { TopBar(navController, "Itsur Notes", onSearchClick = { tareasNotasViewModel.buscarItems(it) }) },
-        floatingActionButton = {
-            BotonFlotante {
-                navController.navigate("agregar") // Navegar a la pantalla de agregar tarea o nota
+    NavHost(
+        navController = navController,
+        startDestination = "principal"
+    ) {
+        composable("principal") {
+            PrincipalLayout(navController, tareasNotasViewModel, tabs, selectedTabIndex) {
+                selectedTabIndex = it
             }
         }
-    ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            TabRow(selectedTabIndex = selectedTabIndex) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(title) }
-                    )
-                }
-            }
-            NavHost(
-                navController = navController,
-                startDestination = "principal",
-                modifier = Modifier.weight(1f)
-            ) {
-                composable("principal") {
-                    // Mantener la pantalla principal según la pestaña seleccionada
-                    if (selectedTabIndex == 0) {
-                        PrincipalLayout(navController, tareasNotasViewModel, mostrarTareas = true)
-                    } else {
-                        PrincipalLayout(navController, tareasNotasViewModel, mostrarTareas = false)
-                    }
-                }
-                composable("agregar") {
-                    Agregar(navController, tareasNotasViewModel)
-                }
-                composable("item/{itemTitulo}") { backStackEntry ->
-                    val itemTitulo = backStackEntry.arguments?.getString("itemTitulo") ?: ""
-                    ItemLayout(navController, tareasNotasViewModel, itemTitulo)
-                }
-            }
-
+        composable("agregar") {
+            Agregar(navController, tareasNotasViewModel)
         }
-
-
+        composable("item/{itemTitulo}") { backStackEntry ->
+            val itemTitulo = backStackEntry.arguments?.getString("itemTitulo") ?: ""
+            ItemLayout(navController, tareasNotasViewModel, itemTitulo)
+        }
     }
-
 }

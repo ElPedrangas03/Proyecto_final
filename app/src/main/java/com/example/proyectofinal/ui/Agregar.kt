@@ -2,6 +2,7 @@ package com.example.proyectofinal.ui
 
 import android.app.TimePickerDialog
 import android.icu.util.Calendar
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
@@ -15,8 +16,13 @@ import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -28,11 +34,17 @@ import java.time.ZoneOffset
 import java.util.TimeZone
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewModel) {
     val context = LocalContext.current
-
+    var title by remember { mutableStateOf("") }
+    var isNota by remember { mutableStateOf(true) }
+    var content by remember { mutableStateOf("") }
+    var dueDate by remember { mutableStateOf(LocalDate.now()) }  //Fecha predeterminada: hoy
+    var dueTime by remember { mutableStateOf(LocalTime.now().withSecond(0).withNano(0)) }  //Hora predeterminada: thismoment
+    var showDatePickerDialog by remember { mutableStateOf(false) }
+    var showTabs by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -41,16 +53,29 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
                     }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        if (isNota) {
+                            tareasNotasViewModel.agregarNota(title, LocalDateTime.now(), content)
+                        } else {
+                            val dueDateTime = LocalDateTime.of(dueDate, dueTime)
+                            tareasNotasViewModel.agregarTarea(
+                                title,
+                                dueDateTime,
+                                LocalDateTime.now(),
+                                content
+                            )
+                        }
+                        navController.popBackStack()
+                    }) {
+                        Icon(Icons.Default.Done, contentDescription = "Guardar")
+                    }
                 }
+
             )
         }
     ) { paddingValues ->
-        var title by remember { mutableStateOf("") }
-        var isNota by remember { mutableStateOf(true) }
-        var content by remember { mutableStateOf("") }
-        var dueDate by remember { mutableStateOf(LocalDate.now()) }  //Fecha predeterminada: hoy
-        var dueTime by remember { mutableStateOf(LocalTime.now().withSecond(0).withNano(0)) }  //Hora predeterminada: thismoment
-        var showDatePickerDialog by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
@@ -91,6 +116,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 label = { Text("Título") },
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             if (isNota) {
@@ -102,7 +128,50 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                         .fillMaxWidth()
                         .height(100.dp)
                 )
-                MultimediaPicker(onMediaSelected = { /* TODO: Handle media selection */ })
+                val context = LocalContext.current
+                var imagesUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        //modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
+                            imagesUris = imagesUris + newUris
+                        })
+                    }
+                    Row(
+                        //modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        CollectionGalleryView(
+                            imagesUris = imagesUris,
+                            onImagesChanged = { newUris ->
+                                imagesUris = imagesUris + newUris
+                            })
+                    }
+                    FlowRow(
+                        modifier = Modifier.padding(top = 2.dp)
+                    ) {
+                        imagesUris.forEach { uri ->
+                            AsyncImage(
+                                model = ImageRequest.Builder(context).data(uri)
+                                    .crossfade(enable = true).build(),
+                                contentDescription = "",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .padding(start = 5.dp, end = 5.dp, top = 10.dp)
+                            )
+                        }
+                    }
+                }
+
+
             } else {
                 OutlinedTextField(
                     value = dueDate.toString(),
@@ -111,7 +180,10 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { showDatePickerDialog = true }) {
-                            Icon(painter = painterResource(id = android.R.drawable.ic_menu_my_calendar), contentDescription = "Seleccionar fecha")
+                            Icon(
+                                painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
+                                contentDescription = "Seleccionar fecha"
+                            )
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -136,7 +208,10 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                             )
                             timePicker.show()
                         }) {
-                            Icon(painter = painterResource(id = android.R.drawable.ic_menu_recent_history), contentDescription = "Seleccionar hora")
+                            Icon(
+                                painter = painterResource(id = android.R.drawable.ic_menu_recent_history),
+                                contentDescription = "Seleccionar hora"
+                            )
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -150,7 +225,49 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                         .fillMaxWidth()
                         .height(100.dp)
                 )
-                MultimediaPicker(onMediaSelected = { /* TODO: Handle media selection */ })
+
+                val context = LocalContext.current
+                var imagesUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        //modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
+                            imagesUris = imagesUris + newUris
+                        })
+                    }
+                    Row(
+                        //modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        CollectionGalleryView(
+                            imagesUris = imagesUris,
+                            onImagesChanged = { newUris ->
+                                imagesUris = imagesUris + newUris
+                            })
+                    }
+                    FlowRow(
+                        modifier = Modifier.padding(top = 2.dp)
+                    ) {
+                        imagesUris.forEach { uri ->
+                            AsyncImage(
+                                model = ImageRequest.Builder(context).data(uri)
+                                    .crossfade(enable = true).build(),
+                                contentDescription = "",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .padding(start = 5.dp, end = 5.dp, top = 10.dp)
+                            )
+                        }
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -160,7 +277,12 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                         tareasNotasViewModel.agregarNota(title, LocalDateTime.now(), content)
                     } else {
                         val dueDateTime = LocalDateTime.of(dueDate, dueTime)
-                        tareasNotasViewModel.agregarTarea(title, dueDateTime, LocalDateTime.now(), content)
+                        tareasNotasViewModel.agregarTarea(
+                            title,
+                            dueDateTime,
+                            LocalDateTime.now(),
+                            content
+                        )
                     }
                     navController.popBackStack()
                 },
@@ -168,6 +290,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
             ) {
                 Text("Guardar")
             }
+
         }
 
         if (showDatePickerDialog) {
@@ -182,6 +305,8 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
         }
     }
 }
+
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)

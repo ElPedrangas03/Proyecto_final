@@ -71,4 +71,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.navigation:navigation-compose:2.8.2")
+
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
+    //implementation("io.coil-kt:coil-compose:2-3-0")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
 }

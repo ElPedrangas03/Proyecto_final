@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.*
@@ -22,6 +23,7 @@ fun BoxTarea(
     Descripcion: String,
     onCardClick: () -> Unit,
     onComplete: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit) {
     Card(
         modifier = Modifier
@@ -40,6 +42,10 @@ fun BoxTarea(
             ) {
                 IconButton(onClick = onComplete) {
                     Icon(Icons.Default.Done, contentDescription = "Completar tarea")
+                }
+                // Cambiar el onclick para editar el elemento
+                IconButton(onClick = onEdit){
+                    Icon(Icons.Default.Create, contentDescription = "Editar tarea")
                 }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Eliminar tarea")

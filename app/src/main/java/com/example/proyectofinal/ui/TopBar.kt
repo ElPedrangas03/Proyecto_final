@@ -15,7 +15,7 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(navController: NavController, title: String, onSearchClick: (String) -> Unit) {
+fun TopBar(navController: NavController, title: String, onSearchClick: () -> Unit) {
     TopAppBar(
         title = { Text(title) },
         navigationIcon = {
@@ -24,7 +24,7 @@ fun TopBar(navController: NavController, title: String, onSearchClick: (String) 
             }
         },
         actions = {
-            IconButton(onClick = { /* Implementar búsqueda */ }) {
+            IconButton(onClick = { onSearchClick() }) {
                 Icon(Icons.Default.Search, contentDescription = "Buscar")
             }
             IconButton(onClick = { /* Acción de configuración */ }) {

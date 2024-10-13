@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.room.util.copy
 import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -57,6 +58,19 @@ class TareasNotasViewModel : ViewModel() {
         uiState = uiState.copy(items = updatedItems)
     }
 
+    fun editarTarea(titulo: String, fecha: LocalDateTime, fechaCreacion:LocalDateTime, descripcion: String, id: Int)
+    {
+        val updateItems = uiState.items.toMutableList()
+        updateItems[id]=Item.Tarea(titulo, fecha, fechaCreacion, descripcion)
+        uiState = uiState.copy(items = updateItems)
+    }
+    fun editarNota(titulo: String, fechaCreacion:LocalDateTime, contenido: String, id: Int)
+    {
+        val updatedItems = uiState.items.toMutableList()
+        updatedItems[id]=Item.Nota(titulo, fechaCreacion, contenido)
+        uiState = uiState.copy(items = updatedItems)
+    }
+
     fun buscarItems(query: String) {
         uiState = uiState.copy(searchQuery = query)
     }
@@ -103,5 +117,20 @@ class TareasNotasViewModel : ViewModel() {
             else -> uiState.items
         }
     }
+    fun obtenerItemsPorText(filtro: String): List<Item> {
+        val filtrado = uiState.items.filter{
+            when(it)
+            {
+                is Item.Tarea -> it.titulo.contains(filtro, ignoreCase = true)
+                is Item.Nota -> it.titulo.contains(filtro, ignoreCase = true)
+            }
+        }
 
+        return filtrado
+    }
+    fun obtenerItemPorID(posicion: Int): Item
+    {
+        val updatedItems = uiState.items.toMutableList()
+        return updatedItems.get(posicion)
+    }
 }

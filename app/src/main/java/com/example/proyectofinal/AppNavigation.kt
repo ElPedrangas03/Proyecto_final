@@ -24,6 +24,8 @@ import com.example.proyectofinal.ui.TareasNotasViewModel
 import com.example.proyectofinal.ui.PrincipalLayout
 import com.example.proyectofinal.ui.Agregar
 import com.example.proyectofinal.ui.BotonFlotante
+import com.example.proyectofinal.ui.Buscar
+import com.example.proyectofinal.ui.Editar
 import com.example.proyectofinal.ui.ItemLayout
 import com.example.proyectofinal.ui.TopBar
 
@@ -47,6 +49,15 @@ fun AppNavigation() {
         }
         composable("agregar") {
             Agregar(navController, tareasNotasViewModel)
+        }
+        composable("buscar") {
+            Buscar(navController, tareasNotasViewModel, tabs, selectedTabIndex){
+                selectedTabIndex = it
+            }
+        }
+        composable("itemEditar/{itemId}") { backStackEntry ->
+            val itemId = backStackEntry.arguments?.getString("itemId")?.toIntOrNull() ?: return@composable
+            Editar(navController, tareasNotasViewModel, itemId)
         }
         composable("item/{itemTitulo}") { backStackEntry ->
             val itemTitulo = backStackEntry.arguments?.getString("itemTitulo") ?: ""

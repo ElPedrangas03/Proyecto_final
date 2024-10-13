@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ fun BoxNota(
     Fechacreacion: LocalDateTime,
     Contenido: String,
     onCardClick: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit) {
     Card(
         modifier = Modifier
@@ -36,6 +38,9 @@ fun BoxNota(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                IconButton(onClick = onEdit){
+                    Icon(Icons.Default.Create, contentDescription = "Editar nota")
+                }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Eliminar nota")
                 }

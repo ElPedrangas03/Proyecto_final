@@ -20,9 +20,11 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.example.proyectofinal.R
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -48,7 +50,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Agregar Tarea/Nota") },
+                title = { Text(stringResource(R.string.agregar_tarea_nota)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
@@ -88,7 +90,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 modifier = Modifier.padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tipo de elemento:")
+                Text(stringResource(R.string.tipo_de_elemento))
                 Spacer(modifier = Modifier.width(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
@@ -96,7 +98,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                         onClick = { isNota = true },
                         colors = RadioButtonDefaults.colors()
                     )
-                    Text("Nota")
+                    Text(stringResource(R.string.nota))
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -105,7 +107,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                         onClick = { isNota = false },
                         colors = RadioButtonDefaults.colors()
                     )
-                    Text("Tarea")
+                    Text(stringResource(R.string.tarea))
                 }
             }
 
@@ -113,7 +115,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
             TextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Título") },
+                label = { Text(stringResource(R.string.titulo)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -123,7 +125,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 TextField(
                     value = content,
                     onValueChange = { content = it },
-                    label = { Text("Contenido de la Nota") },
+                    label = { Text(stringResource(R.string.contenido_de_la_nota)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
@@ -176,13 +178,13 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 OutlinedTextField(
                     value = dueDate.toString(),
                     onValueChange = {},
-                    label = { Text("Fecha de Vencimiento") },
+                    label = { Text(stringResource(R.string.fecha_de_vencimiento)) },
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { showDatePickerDialog = true }) {
                             Icon(
                                 painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
-                                contentDescription = "Seleccionar fecha"
+                                contentDescription = stringResource(R.string.seleccionar_fecha)
                             )
                         }
                     },
@@ -192,7 +194,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 OutlinedTextField(
                     value = dueTime.toString(),
                     onValueChange = {},
-                    label = { Text("Hora de Vencimiento") },
+                    label = { Text(stringResource(R.string.hora_de_vencimiento)) },
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = {
@@ -210,7 +212,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                         }) {
                             Icon(
                                 painter = painterResource(id = android.R.drawable.ic_menu_recent_history),
-                                contentDescription = "Seleccionar hora"
+                                contentDescription = stringResource(R.string.seleccionar_hora)
                             )
                         }
                     },
@@ -220,7 +222,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 TextField(
                     value = content,
                     onValueChange = { content = it },
-                    label = { Text("Descripción") },
+                    label = { Text(stringResource(R.string.descripcion)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
@@ -288,7 +290,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Guardar")
+                Text(stringResource(R.string.guardar))
             }
 
         }
@@ -335,12 +337,12 @@ fun DatePickerModal(
                 }
                 onDismiss()
             }) {
-                Text("OK")
+                Text(stringResource(R.string.aceptar))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancelar))
             }
         }
     ) {

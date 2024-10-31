@@ -32,11 +32,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.proyectofinal.R
 import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -60,7 +62,7 @@ fun Buscar(
                         onValueChange = {
                             search = it
                         },
-                        label = { Text("Buscar") },
+                        label = { Text(stringResource(id = R.string.buscar)) },
                         modifier = Modifier.fillMaxWidth()
                     ) },
                 navigationIcon = {
@@ -103,11 +105,12 @@ fun Buscar(
                                 Text(
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Bold,
-                                    text = "Tarea"
+                                    text = stringResource(id = R.string.tarea)+"s"
                                 )
                                 marcadorTarea=true
                             }
                             BoxTarea(
+                                Tarea = item,
                                 Titulo = item.titulo,
                                 Fecha = item.fecha,
                                 Fechacreacion = item.fechaCreacion,
@@ -133,7 +136,7 @@ fun Buscar(
                                 Text(
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Bold,
-                                    text = "Nota"
+                                    text = stringResource(id = R.string.nota)+"s"
                                 )
                                 marcadorNota=true
                             }

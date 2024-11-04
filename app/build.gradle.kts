@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 android {
@@ -63,6 +64,7 @@ dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.material)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.volley)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -72,8 +74,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.navigation:navigation-compose:2.8.2")
-
+    ksp("androidx.room:room-compiler:2.5.0")
     implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
     //implementation("io.coil-kt:coil-compose:2-3-0")
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
-}
+    implementation("androidx.room:room-runtime:2.5.0")
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.room:room-ktx:2.5.0")
+    implementation("io.coil-kt:coil-compose:2.2.2")}

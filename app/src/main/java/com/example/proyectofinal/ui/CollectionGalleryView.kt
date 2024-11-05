@@ -1,5 +1,6 @@
 package com.example.proyectofinal.ui
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -33,6 +34,9 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.proyectofinal.R
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 
 //@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -87,7 +91,8 @@ fun CollectionGalleryView(imagesUris: List<Uri>, onImagesChanged: (List<Uri>) ->
     val multiplePhoto = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
     ) { uris ->
-        onImagesChanged(uris)
+        val copiedUris = uris.mapNotNull { copiarImagen(context, it) }
+        onImagesChanged(imagesUris + copiedUris)
     }
 
     Column(
@@ -103,3 +108,21 @@ fun CollectionGalleryView(imagesUris: List<Uri>, onImagesChanged: (List<Uri>) ->
         }
     }
 }
+fun copiarImagen(context: Context, uri: Uri): Uri? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val file = File(context.filesDir, "imagen_${System.currentTimeMillis()}.jpg")
+        val outputStream = FileOutputStream(file)
+
+        inputStream.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+        Uri.fromFile(file)
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
+    }
+}
+

@@ -4,9 +4,13 @@ import android.app.TimePickerDialog
 import android.icu.util.Calendar
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,8 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -25,9 +32,13 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.proyectofinal.R
+import com.example.proyectofinal.data.Nota
+import com.example.proyectofinal.data.Tarea
+
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -38,54 +49,89 @@ import java.util.TimeZone
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewModel) {
+fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
     val context = LocalContext.current
-    var title by remember { mutableStateOf("") }
-    var isNota by remember { mutableStateOf(true) }
-    var content by remember { mutableStateOf("") }
-    var dueDate by remember { mutableStateOf(LocalDate.now()) }  //Fecha predeterminada: hoy
-    var dueTime by remember { mutableStateOf(LocalTime.now().withSecond(0).withNano(0)) }  //Hora predeterminada: thismoment
-    var showDatePickerDialog by remember { mutableStateOf(false) }
-    var showTabs by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    var isNota by rememberSaveable { mutableStateOf(true) }
+    var showDatePickerDialog by rememberSaveable { mutableStateOf(false) }
+
+    var isButtonEnabled by remember { mutableStateOf(true) }
+    var isNavigating by remember { mutableStateOf(false) }
+    var shouldResetFields by remember { mutableStateOf(true) }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.agregar_tarea_nota)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        if (isButtonEnabled && !isNavigating) {
+                            isButtonEnabled = false
+                            isNavigating = true
+                            navController.popBackStack()
+                            shouldResetFields = true
+                            isButtonEnabled = true
+                            isNavigating = false
+                            viewModel.resetearCampos()
+                        }
+
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
                     }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        if (isNota) {
-                            tareasNotasViewModel.agregarNota(title, LocalDateTime.now(), content)
-                        } else {
-                            val dueDateTime = LocalDateTime.of(dueDate, dueTime)
-                            tareasNotasViewModel.agregarTarea(
-                                title,
-                                dueDateTime,
-                                LocalDateTime.now(),
-                                content
-                            )
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                if (isButtonEnabled && !isNavigating) {
+                    isButtonEnabled = false
+                    scope.launch {
+                        try {
+                            if (isNota) {
+                                viewModel.agregarNota(
+                                    titulo = viewModel.title,
+                                    fechaCreacion = LocalDateTime.now(),
+                                    contenido = viewModel.content,
+                                    imagenes = viewModel.imagesUris
+                                )
+                            } else {
+                                val dueDateTime = LocalDateTime.of(viewModel.dueDate, viewModel.dueTime)
+                                viewModel.agregarTarea(
+                                    titulo = viewModel.title,
+                                    fecha = dueDateTime,
+                                    fechaCreacion = LocalDateTime.now(),
+                                    descripcion = viewModel.content,
+                                    imagenes = viewModel.imagesUris
+                                )
+                            }
+                            isNavigating = true
+                            shouldResetFields = false
+                            navController.popBackStack()
+                            viewModel.resetearCampos()
+                        } catch (e: Exception) {
+                            Log.e("Agregar", "Error al guardar: ", e)
+                        } finally {
+                            if (shouldResetFields) {
+                                viewModel.resetearCampos()
+                            }
+                            isButtonEnabled = true
+                            isNavigating = false
                         }
-                        navController.popBackStack()
-                    }) {
-                        Icon(Icons.Default.Done, contentDescription = "Guardar")
                     }
                 }
-
-            )
+            }) {
+                Icon(Icons.Default.Done, contentDescription = "Guardar")
+            }
         }
     ) { paddingValues ->
-
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-
             Row(
                 modifier = Modifier.padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -111,10 +157,11 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 }
             }
 
-
             TextField(
-                value = title,
-                onValueChange = { title = it },
+                value = viewModel.title,
+                onValueChange = { newValue ->
+                    viewModel.updateTitle(newValue)
+                },
                 label = { Text(stringResource(R.string.titulo)) },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -123,60 +170,64 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
 
             if (isNota) {
                 TextField(
-                    value = content,
-                    onValueChange = { content = it },
+                    value = viewModel.content,
+                    onValueChange = {
+                        viewModel.updateContent(it)
+                    },
                     label = { Text(stringResource(R.string.contenido_de_la_nota)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
                 )
-                val context = LocalContext.current
-                var imagesUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
-                            imagesUris = imagesUris + newUris
-                        })
-                    }
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CollectionGalleryView(
-                            imagesUris = imagesUris,
-                            onImagesChanged = { newUris ->
-                                imagesUris = imagesUris + newUris
-                            })
-                    }
                     FlowRow(
                         modifier = Modifier.padding(top = 2.dp)
                     ) {
-                        imagesUris.forEach { uri ->
-                            AsyncImage(
-                                model = ImageRequest.Builder(context).data(uri)
-                                    .crossfade(enable = true).build(),
-                                contentDescription = "",
-                                contentScale = ContentScale.Crop,
+                        CameraView(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
+                            val uniqueUris = (viewModel.imagesUris + newUris).distinct()
+                            viewModel.updateImagesUris(uniqueUris)
+                        })
+                        CollectionGalleryView(
+                            imagesUris = viewModel.imagesUris,
+                            onImagesChanged = { newUris ->
+                                val uniqueUris = (viewModel.imagesUris + newUris).distinct()
+                                viewModel.updateImagesUris(uniqueUris)
+                            }
+                        )
+                        viewModel.imagesUris.forEach { uri ->
+                            Box(
                                 modifier = Modifier
-                                    .size(120.dp)
-                                    .padding(start = 5.dp, end = 5.dp, top = 10.dp)
-                            )
+                                    .padding(5.dp)
+                            ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context).data(uri)
+                                        .crossfade(enable = true).build(),
+                                    contentDescription = "",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .padding(start = 5.dp, end = 5.dp, top = 10.dp)
+                                )
+                                IconButton(
+                                    onClick = { viewModel.removeImageUri(uri) },
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Eliminar imagen",
+                                        tint = Color.Red
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-
-
             } else {
                 OutlinedTextField(
-                    value = dueDate.toString(),
+                    value = viewModel.dueDate.toString(),
                     onValueChange = {},
                     label = { Text(stringResource(R.string.fecha_de_vencimiento)) },
                     readOnly = true,
@@ -192,7 +243,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = dueTime.toString(),
+                    value = viewModel.dueTime.toString(),
                     onValueChange = {},
                     label = { Text(stringResource(R.string.hora_de_vencimiento)) },
                     readOnly = true,
@@ -202,7 +253,7 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                             val timePicker = TimePickerDialog(
                                 context,
                                 { _, hourOfDay, minute ->
-                                    dueTime = LocalTime.of(hourOfDay, minute)
+                                    viewModel.updateDueTime(LocalTime.of(hourOfDay, minute))
                                 },
                                 calendar.get(Calendar.HOUR_OF_DAY),
                                 calendar.get(Calendar.MINUTE),
@@ -219,86 +270,72 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
                 TextField(
-                    value = content,
-                    onValueChange = { content = it },
+                    value = viewModel.content,
+                    onValueChange = {
+                        viewModel.updateContent(it)
+                    },
                     label = { Text(stringResource(R.string.descripcion)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
                 )
 
-                val context = LocalContext.current
-                var imagesUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
-
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
-                            imagesUris = imagesUris + newUris
-                        })
-                    }
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CollectionGalleryView(
-                            imagesUris = imagesUris,
-                            onImagesChanged = { newUris ->
-                                imagesUris = imagesUris + newUris
-                            })
-                    }
                     FlowRow(
                         modifier = Modifier.padding(top = 2.dp)
                     ) {
-                        imagesUris.forEach { uri ->
-                            AsyncImage(
-                                model = ImageRequest.Builder(context).data(uri)
-                                    .crossfade(enable = true).build(),
-                                contentDescription = "",
-                                contentScale = ContentScale.Crop,
+                        CameraView(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
+                            val uniqueUris = (viewModel.imagesUris + newUris).distinct()
+                            viewModel.updateImagesUris(uniqueUris)
+                        })
+                        CollectionGalleryView(
+                            imagesUris = viewModel.imagesUris,
+                            onImagesChanged = { newUris ->
+                                val uniqueUris = (viewModel.imagesUris + newUris).distinct()
+                                viewModel.updateImagesUris(uniqueUris)
+                            }
+                        )
+                        viewModel.imagesUris.forEach { uri ->
+                            Box(
                                 modifier = Modifier
-                                    .size(120.dp)
-                                    .padding(start = 5.dp, end = 5.dp, top = 10.dp)
-                            )
+                                    .padding(5.dp)
+                            ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context).data(uri)
+                                        .crossfade(enable = true).build(),
+                                    contentDescription = "",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .padding(start = 5.dp, end = 5.dp, top = 10.dp)
+                                )
+                                IconButton(
+                                    onClick = { viewModel.removeImageUri(uri) },
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Eliminar imagen",
+                                        tint = Color.Red
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (isNota) {
-                        tareasNotasViewModel.agregarNota(title, LocalDateTime.now(), content)
-                    } else {
-                        val dueDateTime = LocalDateTime.of(dueDate, dueTime)
-                        tareasNotasViewModel.agregarTarea(
-                            title,
-                            dueDateTime,
-                            LocalDateTime.now(),
-                            content
-                        )
-                    }
-                    navController.popBackStack()
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(stringResource(R.string.guardar))
-            }
-
         }
 
         if (showDatePickerDialog) {
             DatePickerModal(
                 onDateSelected = { selectedDate ->
-                    dueDate = selectedDate
+                    viewModel.updateDueDate(selectedDate)
                 },
                 onDismiss = {
                     showDatePickerDialog = false
@@ -307,7 +344,6 @@ fun Agregar(navController: NavController, tareasNotasViewModel: TareasNotasViewM
         }
     }
 }
-
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -331,7 +367,7 @@ fun DatePickerModal(
                         ZoneOffset.UTC
                     ).toLocalDate()
 
-                    onDateSelected(selectedDate)  // Devuelve la fecha seleccionada
+                    onDateSelected(selectedDate)
                 } else {
                     onDateSelected(LocalDate.now())
                 }
@@ -346,6 +382,13 @@ fun DatePickerModal(
             }
         }
     ) {
-        DatePicker(state = datePickerState)
+        // Aquí añadimos el verticalScroll
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 }

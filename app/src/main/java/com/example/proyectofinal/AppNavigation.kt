@@ -24,40 +24,47 @@ import androidx.navigation.compose.rememberNavController
 import com.example.proyectofinal.ui.TareasNotasViewModel
 import com.example.proyectofinal.ui.PrincipalLayout
 import com.example.proyectofinal.ui.Agregar
+import com.example.proyectofinal.ui.AppViewModelProvider
 import com.example.proyectofinal.ui.BotonFlotante
 import com.example.proyectofinal.ui.Buscar
 import com.example.proyectofinal.ui.Editar
 import com.example.proyectofinal.ui.ItemLayout
 import com.example.proyectofinal.ui.TopBar
 
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val tareasNotasViewModel: TareasNotasViewModel = viewModel() // Instancia compartida del ViewModel
+
+    // Inicializamos el ViewModel usando AppViewModelProvider
+    val tareasNotasViewModel: TareasNotasViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf(stringResource(id = R.string.tarea)+"s", stringResource(id = R.string.nota)+"s")
+    val tabs = listOf(stringResource(id = R.string.tarea) + "s", stringResource(id = R.string.nota) + "s")
 
     NavHost(
         navController = navController,
         startDestination = "principal"
     ) {
         composable("principal") {
-            PrincipalLayout(navController, tareasNotasViewModel, tabs, selectedTabIndex) {
-                selectedTabIndex = it
-            }
+            PrincipalLayout(
+                navController = navController,
+                tareasNotasViewModel = tareasNotasViewModel,
+                tabs = tabs,
+                onTabSelected = { selectedTabIndex = it } // Este es el parámetro `onTabSelected` que es una función
+            )
         }
         composable("agregar") {
             Agregar(navController, tareasNotasViewModel)
         }
         composable("buscar") {
-            Buscar(navController, tareasNotasViewModel, tabs, selectedTabIndex){
+            Buscar(navController, tareasNotasViewModel, tabs, selectedTabIndex) {
                 selectedTabIndex = it
             }
         }
         composable("itemEditar/{itemId}") { backStackEntry ->
-            val itemId = backStackEntry.arguments?.getString("itemId")?.toIntOrNull() ?: return@composable
+            val itemId = backStackEntry.arguments?.getString("itemId") ?: return@composable
             Editar(navController, tareasNotasViewModel, itemId)
         }
         composable("item/{itemTitulo}") { backStackEntry ->

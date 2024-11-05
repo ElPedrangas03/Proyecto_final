@@ -15,15 +15,22 @@ import com.example.proyectofinal.R
 @Composable
 fun FilterButton(tabIndex: Int, filtroSeleccionado: String?, onFilterSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+
     val items = when (tabIndex) {
-        0 -> listOf("Fecha de vencimiento", "Fecha de creación", "Título")
-        else -> listOf("Fecha de creación", "Título")
+        0 -> listOf(
+            stringResource(R.string.fecha_de_vencimiento),
+            stringResource(R.string.fecha_de_creacion),
+            stringResource(R.string.titulo)
+        )
+        else -> listOf(
+            stringResource(R.string.fecha_de_creacion),
+            stringResource(R.string.titulo)
+        )
     }
-    var selectedFilter by remember { mutableStateOf(items[0]) }
 
     Column(modifier = Modifier.padding(8.dp)) {
         Button(onClick = { expanded = true }) {
-            Text(stringResource(R.string.filtrar_por)+": ${filtroSeleccionado ?: items[0]}")
+            Text(stringResource(R.string.filtrar_por) + ": ${filtroSeleccionado ?: items[0]}")
         }
         DropdownMenu(
             expanded = expanded,
@@ -33,7 +40,6 @@ fun FilterButton(tabIndex: Int, filtroSeleccionado: String?, onFilterSelected: (
                 DropdownMenuItem(
                     text = { Text(filter) },
                     onClick = {
-                        selectedFilter = filter
                         expanded = false
                         onFilterSelected(filter)
                     }

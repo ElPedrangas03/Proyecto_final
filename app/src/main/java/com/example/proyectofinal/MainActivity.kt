@@ -73,7 +73,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.proyectofinal.ui.AppViewModelProvider
 import com.example.proyectofinal.ui.TareasNotasViewModel
+
 import com.example.proyectofinal.ui.theme.ProyectoFinalTheme
 import java.util.Date
 
@@ -82,12 +84,10 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             ProyectoFinalTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    // Llamada a la navegación de la aplicación
                     AppNavigation()
                 }
             }

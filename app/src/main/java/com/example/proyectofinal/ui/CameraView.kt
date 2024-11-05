@@ -119,7 +119,7 @@ fun CameraView(imagesUris: List<Uri>, onImagesChanged: (List<Uri>) -> Unit) {
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) {
-        if (it) onImagesChanged(listOf(uri)) // Añadir la nueva imagen a la lista
+        if (it) onImagesChanged(imagesUris + uri) // Add the new image to the existing list
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -150,13 +150,30 @@ fun CameraView(imagesUris: List<Uri>, onImagesChanged: (List<Uri>) -> Unit) {
     }
 }
 
+/*FlowRow(
+    modifier = Modifier.padding(top = 16.dp)
+) {
+    imagesUris.forEach { uri ->
+        AsyncImage(
+            model = ImageRequest.Builder(context).data(uri)
+                .crossfade(enable = true).build(),
+            contentDescription = "",
+            modifier = Modifier
+                .size(120.dp)
+                .padding(start = 5.dp, end = 5.dp, top = 10.dp)
+        )
+    }
+}*/
+
+
 @SuppressLint("SimpleDateFormat")
 fun Context.createImageFile(): File {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     val imageFileName = "JPEG_$timeStamp"
+    val storageDir = getExternalFilesDir("images")  // Debe coincidir con el path definido en file_paths.xml
     return File.createTempFile(
         imageFileName,
         ".jpg",
-        externalCacheDir
+        storageDir
     )
 }

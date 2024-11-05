@@ -1,7 +1,5 @@
 package com.example.proyectofinal.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
@@ -12,47 +10,40 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import java.time.LocalDateTime
-import java.time.LocalTime
+import com.example.proyectofinal.data.Tarea
 
 @Composable
 fun BoxTarea(
-    Tarea: Item.Tarea,
-    Titulo: String,
-    Fecha: LocalDateTime,
-    Fechacreacion: LocalDateTime,
-    Descripcion: String,
+    tarea: Tarea,
     onCardClick: () -> Unit,
     onComplete: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit) {
+    onDelete: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable(onClick = onCardClick),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(Titulo, style = MaterialTheme.typography.headlineSmall)
-            Text(Fecha.toString(), style = MaterialTheme.typography.bodyMedium)
-            Text(Descripcion, style = MaterialTheme.typography.bodyMedium)
+            Text(tarea.titulo, style = MaterialTheme.typography.headlineSmall)
+            Text(tarea.fecha.toString(), style = MaterialTheme.typography.bodyMedium)
+
+            Text(tarea.descripcion, style = MaterialTheme.typography.bodyMedium)
             Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-
-                if (!Tarea.completada)
-                {
+                if (!tarea.completada) {
                     IconButton(onClick = onComplete) {
                         Icon(Icons.Default.Done, contentDescription = "Completar tarea")
                     }
-                    // Cambiar el onclick para editar el elemento
-                    IconButton(onClick = onEdit){
+                    IconButton(onClick = onEdit) {
                         Icon(Icons.Default.Create, contentDescription = "Editar tarea")
                     }
                 }
-
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Eliminar tarea")
                 }
@@ -60,3 +51,4 @@ fun BoxTarea(
         }
     }
 }
+

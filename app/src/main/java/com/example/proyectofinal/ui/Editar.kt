@@ -2,10 +2,9 @@ package com.example.proyectofinal.ui
 
 import android.app.TimePickerDialog
 import android.icu.util.Calendar
-import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -17,13 +16,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -36,12 +38,14 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,10 +56,13 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.proyectofinal.R
+import com.example.proyectofinal.data.Nota
+import com.example.proyectofinal.data.Tarea
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -63,62 +70,93 @@ import java.time.ZoneOffset
 fun Editar(
     navController: NavController,
     tareasNotasViewModel: TareasNotasViewModel,
-    idItem: Int
+    idItem: String
 ) {
     val context = LocalContext.current
-    var TareaNota = tareasNotasViewModel.obtenerItemPorID(idItem)
-    var title by remember { mutableStateOf("") }
-    var isNota by remember { mutableStateOf(true) }
-    var content by remember { mutableStateOf("") }
-    var dueDate by remember { mutableStateOf(LocalDate.now()) }  //Fecha predeterminada: hoy
-    var dueTime by remember { mutableStateOf(LocalTime.now().withSecond(0).withNano(0)) }
-    var showDatePickerDialog by remember { mutableStateOf(false) }
-    var showTabs by remember { mutableStateOf(false) }
-    when(TareaNota)
-    {
-        is Item.Tarea -> {
-            title = TareaNota.titulo
-            isNota = false
-            content = TareaNota.descripcion
-            dueDate = TareaNota.fecha.toLocalDate()
-            dueTime = TareaNota.fechaCreacion.toLocalTime().withSecond(0).withNano(0)
-        }
-        is Item.Nota -> {
-            title = TareaNota.titulo
-            isNota = true
-            content = TareaNota.contenido
+    val tareaNota = tareasNotasViewModel.obtenerItemPorID(idItem)
+
+    if (tareaNota == null) {
+        tareasNotasViewModel.resetearCampos()
+        navController.popBackStack()
+        return
+    }
+
+    tareaNota.let {
+        if (it is Tarea) {
+            tareasNotasViewModel.updateTitle(it.titulo)
+            tareasNotasViewModel.updateContent(it.descripcion)
+            it.fecha?.let { fecha ->
+                tareasNotasViewModel.updateDueDate(LocalDateTime.parse(fecha, DateTimeFormatter.ISO_LOCAL_DATE_TIME).toLocalDate())
+            }
+            it.fechaCreacion?.let { fechaCreacion ->
+                tareasNotasViewModel.updateDueTime(LocalDateTime.parse(fechaCreacion, DateTimeFormatter.ISO_LOCAL_DATE_TIME).toLocalTime())
+            }
+            tareasNotasViewModel.updateImagesUris(tareasNotasViewModel.parseMultimediaUris(it.multimedia))
+        } else if (it is Nota) {
+            tareasNotasViewModel.updateTitle(it.titulo)
+            tareasNotasViewModel.updateContent(it.contenido)
+            tareasNotasViewModel.updateImagesUris(tareasNotasViewModel.parseMultimediaUris(it.multimedia))
         }
     }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            tareasNotasViewModel.resetearCampos()
+        }
+    }
+
+    val title by tareasNotasViewModel::title
+    val content by tareasNotasViewModel::content
+    val dueDate by tareasNotasViewModel::dueDate
+    val dueTime by tareasNotasViewModel::dueTime
+    val imagesUris by tareasNotasViewModel::imagesUris
+    val isNota by remember { mutableStateOf(tareaNota is Nota) }
+    var showDatePickerDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.editar_tarea_nota)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        tareasNotasViewModel.resetearCampos()
+                        navController.navigateUp()
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
                     }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        if (isNota) {
-                            tareasNotasViewModel.editarNota(title, LocalDateTime.now(), content, idItem)
-                        } else {
-                            val dueDateTime = LocalDateTime.of(dueDate, dueTime)
-                            tareasNotasViewModel.editarTarea(
-                                title,
-                                dueDateTime,
-                                dueDateTime,
-                                content,
-                                idItem
-                            )
-                        }
-                        navController.popBackStack()
-                    }) {
-                        Icon(Icons.Default.Done, contentDescription = "Guardar")
-                    }
                 }
-
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                if (isNota) {
+                    tareasNotasViewModel.editarNota(
+                        Nota(
+                            id = idItem,
+                            titulo = title,
+                            fechaCreacion = (tareaNota as Nota).fechaCreacion,
+                            contenido = content,
+                            multimedia = tareasNotasViewModel.convertUrisToJson(imagesUris)
+                        )
+                    )
+                } else {
+                    val dueDateTime = LocalDateTime.of(dueDate, dueTime)
+                    tareasNotasViewModel.editarTarea(
+                        Tarea(
+                            id = idItem,
+                            titulo = title,
+                            fecha = dueDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                            fechaCreacion = (tareaNota as Tarea).fechaCreacion,
+                            descripcion = content,
+                            multimedia = tareasNotasViewModel.convertUrisToJson(imagesUris)
+                        )
+                    )
+                }
+                tareasNotasViewModel.resetearCampos()
+                navController.navigateUp()
+            }) {
+                Icon(Icons.Default.Done, contentDescription = "Guardar")
+            }
         }
     ) { paddingValues ->
 
@@ -127,6 +165,7 @@ fun Editar(
                 .padding(paddingValues)
                 .fillMaxSize()
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
 
             Row(
@@ -138,7 +177,7 @@ fun Editar(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = isNota,
-                        onClick = { isNota = true },
+                        onClick = { /* No se permite cambiar el tipo durante la edición */ },
                         colors = RadioButtonDefaults.colors()
                     )
                     Text(stringResource(id = R.string.nota))
@@ -147,17 +186,16 @@ fun Editar(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = !isNota,
-                        onClick = { isNota = false },
+                        onClick = { /* No se permite cambiar el tipo durante la edición */ },
                         colors = RadioButtonDefaults.colors()
                     )
                     Text(stringResource(id = R.string.tarea))
                 }
             }
 
-
             TextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { tareasNotasViewModel.updateTitle(it) },
                 label = { Text(stringResource(id = R.string.titulo)) },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -167,59 +205,63 @@ fun Editar(
             if (isNota) {
                 TextField(
                     value = content,
-                    onValueChange = { content = it },
+                    onValueChange = { tareasNotasViewModel.updateContent(it) },
                     label = { Text(stringResource(id = R.string.contenido_de_la_nota)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
                 )
-                val context = LocalContext.current
-                var imagesUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
-                            imagesUris = imagesUris + newUris
-                        })
-                    }
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CollectionGalleryView(
-                            imagesUris = imagesUris,
-                            onImagesChanged = { newUris ->
-                                imagesUris = imagesUris + newUris
-                            })
-                    }
                     FlowRow(
                         modifier = Modifier.padding(top = 2.dp)
                     ) {
+                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
+                            val uniqueUris = (imagesUris + newUris).distinct()
+                            tareasNotasViewModel.updateImagesUris(uniqueUris)
+                        })
+                        CollectionGalleryView(
+                            imagesUris = imagesUris,
+                            onImagesChanged = { newUris ->
+                                val uniqueUris = (imagesUris + newUris).distinct()
+                                tareasNotasViewModel.updateImagesUris(uniqueUris)
+                            }
+                        )
                         imagesUris.forEach { uri ->
-                            AsyncImage(
-                                model = ImageRequest.Builder(context).data(uri)
-                                    .crossfade(enable = true).build(),
-                                contentDescription = "",
-                                contentScale = ContentScale.Crop,
+                            Box(
                                 modifier = Modifier
-                                    .size(120.dp)
-                                    .padding(start = 5.dp, end = 5.dp, top = 10.dp)
-                            )
+                                    .padding(5.dp)
+                            ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context).data(uri)
+                                        .crossfade(true).build(),
+                                    contentDescription = "",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .padding(start = 5.dp, end = 5.dp, top = 10.dp)
+                                )
+                                IconButton(
+                                    onClick = {
+                                        tareasNotasViewModel.updateImagesUris(imagesUris.filter { it != uri })
+                                    },
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Eliminar imagen",
+                                        tint = Color.Red
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-
-
             } else {
                 OutlinedTextField(
-                    value = dueDate.toString(),
+                    value = dueDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
                     onValueChange = {},
                     label = { Text(stringResource(id = R.string.fecha_de_vencimiento)) },
                     readOnly = true,
@@ -235,7 +277,7 @@ fun Editar(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = dueTime.toString(),
+                    value = dueTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                     onValueChange = {},
                     label = { Text(stringResource(id = R.string.hora_de_vencimiento)) },
                     readOnly = true,
@@ -245,7 +287,7 @@ fun Editar(
                             val timePicker = TimePickerDialog(
                                 context,
                                 { _, hourOfDay, minute ->
-                                    dueTime = LocalTime.of(hourOfDay, minute)
+                                    tareasNotasViewModel.updateDueTime(LocalTime.of(hourOfDay, minute))
                                 },
                                 calendar.get(Calendar.HOUR_OF_DAY),
                                 calendar.get(Calendar.MINUTE),
@@ -264,85 +306,68 @@ fun Editar(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = content,
-                    onValueChange = { content = it },
+                    onValueChange = { tareasNotasViewModel.updateContent(it) },
                     label = { Text(stringResource(id = R.string.descripcion)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
                 )
 
-                val context = LocalContext.current
-                var imagesUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
-
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
-                            imagesUris = imagesUris + newUris
-                        })
-                    }
-                    Row(
-                        //modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        CollectionGalleryView(
-                            imagesUris = imagesUris,
-                            onImagesChanged = { newUris ->
-                                imagesUris = imagesUris + newUris
-                            })
-                    }
                     FlowRow(
                         modifier = Modifier.padding(top = 2.dp)
                     ) {
+                        CameraView(imagesUris = imagesUris, onImagesChanged = { newUris ->
+                            val uniqueUris = (imagesUris + newUris).distinct()
+                            tareasNotasViewModel.updateImagesUris(uniqueUris)
+                        })
+                        CollectionGalleryView(
+                            imagesUris = imagesUris,
+                            onImagesChanged = { newUris ->
+                                val uniqueUris = (imagesUris + newUris).distinct()
+                                tareasNotasViewModel.updateImagesUris(uniqueUris)
+                            }
+                        )
                         imagesUris.forEach { uri ->
-                            AsyncImage(
-                                model = ImageRequest.Builder(context).data(uri)
-                                    .crossfade(enable = true).build(),
-                                contentDescription = "",
-                                contentScale = ContentScale.Crop,
+                            Box(
                                 modifier = Modifier
-                                    .size(120.dp)
-                                    .padding(start = 5.dp, end = 5.dp, top = 10.dp)
-                            )
+                                    .padding(5.dp)
+                            ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context).data(uri)
+                                        .crossfade(true).build(),
+                                    contentDescription = "",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .padding(start = 5.dp, end = 5.dp, top = 10.dp)
+                                )
+                                IconButton(
+                                    onClick = {
+                                        tareasNotasViewModel.updateImagesUris(imagesUris.filter { it != uri })
+                                    },
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Eliminar imagen",
+                                        tint = Color.Red
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (isNota) {
-                        tareasNotasViewModel.editarNota(title, LocalDateTime.now(), content, idItem)
-                    } else {
-                        val dueDateTime = LocalDateTime.of(dueDate, dueTime)
-                        tareasNotasViewModel.editarTarea(
-                            title,
-                            dueDateTime,
-                            dueDateTime,
-                            content,
-                            idItem
-                        )
-                    }
-                    navController.popBackStack()
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(stringResource(id = R.string.guardar))
-            }
-
         }
 
         if (showDatePickerDialog) {
             DatePickerModalEditar(
                 onDateSelected = { selectedDate ->
-                    dueDate = selectedDate
+                    tareasNotasViewModel.updateDueDate(selectedDate)
                 },
                 onDismiss = {
                     showDatePickerDialog = false
@@ -379,15 +404,22 @@ fun DatePickerModalEditar(
                 }
                 onDismiss()
             }) {
-                Text("OK")
+                Text(stringResource(R.string.aceptar))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancelar))
             }
         }
     ) {
-        DatePicker(state = datePickerState)
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 }
+

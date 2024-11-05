@@ -9,13 +9,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.proyectofinal.R
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -30,12 +33,12 @@ fun PrincipalLayout(
 ) {
     val uiState = tareasNotasViewModel.uiState
     var filtroSeleccionado = rememberSaveable { mutableStateOf<String?>(null) }
-
+    var mostrarCompletadas by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = { TopBar(
             navController,
-            "Itsur Notes",
+            stringResource(id = R.string.app_name)+" \uD83D\uDCDD",
             onSearchClick = {
                 navController.navigate("buscar") // Navegar a la pantalla de busqueda
             }) },
@@ -73,11 +76,34 @@ fun PrincipalLayout(
             ) { filtro ->
                 filtroSeleccionado.value = filtro
             }
-            val itemsFiltrados = when (selectedTabIndex) {
+
+            // El botón de ver/completar tareas
+            if (selectedTabIndex == 0) {
+                Button(
+                    onClick = { mostrarCompletadas = !mostrarCompletadas },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(text = if (mostrarCompletadas)
+                        stringResource(R.string.ver_tareas_pendientes)
+                    else stringResource(
+                        R.string.ver_tareas_completadas)
+                    )
+                }
+            }
+
+            /*val itemsFiltrados = when (selectedTabIndex) {
                 0 -> tareasNotasViewModel.obtenerItemsFiltrados(filtroSeleccionado.value ?: "Fecha de vencimiento", 0)
                 1 -> tareasNotasViewModel.obtenerItemsFiltrados(filtroSeleccionado.value ?: "Fecha de creación", 1)
                 else -> uiState.items
+            }*/
+
+            // Mostrar tareas filtradas o completadas según el botón
+            val itemsFiltrados = when {
+                selectedTabIndex == 0 -> tareasNotasViewModel.obtenerItemsFiltrados(filtroSeleccionado.value ?: "Fecha de vencimiento", 0, mostrarCompletadas)
+                selectedTabIndex == 1 -> tareasNotasViewModel.obtenerItemsFiltrados(filtroSeleccionado.value ?: "Fecha de creación", 1, mostrarCompletadas)
+                else -> uiState.items
             }
+
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -85,6 +111,7 @@ fun PrincipalLayout(
                     when (item) {
                         is Item.Tarea -> {
                             BoxTarea(
+                                Tarea = item, // Pasa el objeto completo
                                 Titulo = item.titulo,
                                 Fecha = item.fecha,
                                 Fechacreacion = item.fechaCreacion,

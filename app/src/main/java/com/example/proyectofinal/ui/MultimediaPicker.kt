@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import coil3.compose.AsyncImage
@@ -46,7 +47,7 @@ fun AbrirCamara(onMediaSelected: (Uri) -> Unit) {
         },
         modifier = Modifier.padding(8.dp)
     ) {
-        Text("Tomar foto")
+        Text(stringResource(id = R.string.tomar_foto))
     }
 
     // Muestra la imagen tomada, si existe
@@ -64,20 +65,20 @@ fun AbrirCamara(onMediaSelected: (Uri) -> Unit) {
 
 @Composable
 fun MultimediaPicker(onMediaSelected: (MultimediaItem) -> Unit) {
-
+    val context = LocalContext.current
     // Placeholder para el selector de multimedia de galeria
     Button(
         onClick = {
             // Aquí iría la lógica para seleccionar el archivo multimedia
             val dummyMedia = MultimediaItem(
                 tipo = MultimediaTipo.IMAGEN,
-                descripcion = "Imagen de ejemplo",
+                descripcion = context.getString(R.string.imagen_de_ejemplo),
                 uri = "file://example.jpg"
             )
             onMediaSelected(dummyMedia)
         },
         modifier = Modifier.padding(8.dp)
     ) {
-        Text("Seleccionar multimedia")
+        Text(stringResource(R.string.seleccionar_multimedia))
     }
 }

@@ -17,6 +17,7 @@ import java.time.LocalTime
 
 @Composable
 fun BoxTarea(
+    Tarea: Item.Tarea,
     Titulo: String,
     Fecha: LocalDateTime,
     Fechacreacion: LocalDateTime,
@@ -40,13 +41,18 @@ fun BoxTarea(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = onComplete) {
-                    Icon(Icons.Default.Done, contentDescription = "Completar tarea")
+
+                if (!Tarea.completada)
+                {
+                    IconButton(onClick = onComplete) {
+                        Icon(Icons.Default.Done, contentDescription = "Completar tarea")
+                    }
+                    // Cambiar el onclick para editar el elemento
+                    IconButton(onClick = onEdit){
+                        Icon(Icons.Default.Create, contentDescription = "Editar tarea")
+                    }
                 }
-                // Cambiar el onclick para editar el elemento
-                IconButton(onClick = onEdit){
-                    Icon(Icons.Default.Create, contentDescription = "Editar tarea")
-                }
+
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Eliminar tarea")
                 }

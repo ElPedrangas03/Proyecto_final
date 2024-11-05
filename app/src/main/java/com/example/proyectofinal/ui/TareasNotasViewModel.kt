@@ -97,7 +97,7 @@ class TareasNotasViewModel : ViewModel() {
 
         uiState = uiState.copy(items = itemsFiltrados)
     }*/
-    fun obtenerItemsFiltrados(filtro: String, tabIndex: Int): List<Item> {
+    /*fun obtenerItemsFiltrados(filtro: String, tabIndex: Int): List<Item> {
         return when (tabIndex) {
             0 -> {
                 when (filtro) {
@@ -116,7 +116,37 @@ class TareasNotasViewModel : ViewModel() {
             }
             else -> uiState.items
         }
+    }*/
+
+    fun obtenerItemsFiltrados(filtro: String, tabIndex: Int, mostrarCompletadas: Boolean): List<Item> {
+        return when (tabIndex) {
+            0 -> {
+                val tareasFiltradas = uiState.items.filterIsInstance<Item.Tarea>()
+                val tareasVisibles = if (!mostrarCompletadas) {
+                    tareasFiltradas.filter { !it.completada } // Excluir tareas completadas
+                } else {
+                    tareasFiltradas.filter { it.completada }// Incluir todas las tareas si se están mostrando completadas
+                }
+
+                when (filtro) {
+                    "Título" -> tareasVisibles.sortedBy { it.titulo }
+                    "Fecha de creación" -> tareasVisibles.sortedByDescending { it.fechaCreacion }
+                    "Fecha de vencimiento" -> tareasVisibles.sortedBy { it.fecha }
+                    else -> tareasVisibles.sortedBy { it.fecha }
+                }
+            }
+            1 -> { // Para Notas (tabIndex == 1)
+                val notasFiltradas = uiState.items.filterIsInstance<Item.Nota>()
+                when (filtro) {
+                    "Título" -> notasFiltradas.sortedBy { it.titulo }
+                    "Fecha de creación" -> notasFiltradas.sortedByDescending { it.fechaCreacion }
+                    else -> notasFiltradas.sortedBy { it.fechaCreacion }
+                }
+            }
+            else -> uiState.items
+        }
     }
+
     fun obtenerItemsPorText(filtro: String): List<Item> {
         val filtrado = uiState.items.filter{
             when(it)

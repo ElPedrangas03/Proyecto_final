@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.proyectofinal.R
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -21,7 +23,7 @@ fun FilterButton(tabIndex: Int, filtroSeleccionado: String?, onFilterSelected: (
 
     Column(modifier = Modifier.padding(8.dp)) {
         Button(onClick = { expanded = true }) {
-            Text("Filtrar por: ${filtroSeleccionado ?: items[0]}")
+            Text(stringResource(R.string.filtrar_por)+": ${filtroSeleccionado ?: items[0]}")
         }
         DropdownMenu(
             expanded = expanded,

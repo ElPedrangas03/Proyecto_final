@@ -45,11 +45,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.example.proyectofinal.R
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -90,7 +92,7 @@ fun Editar(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Editar Tarea/Nota") },
+                title = { Text(stringResource(R.string.editar_tarea_nota)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
@@ -131,7 +133,7 @@ fun Editar(
                 modifier = Modifier.padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tipo de elemento:")
+                Text(stringResource(id = R.string.tipo_de_elemento))
                 Spacer(modifier = Modifier.width(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
@@ -139,7 +141,7 @@ fun Editar(
                         onClick = { isNota = true },
                         colors = RadioButtonDefaults.colors()
                     )
-                    Text("Nota")
+                    Text(stringResource(id = R.string.nota))
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -148,7 +150,7 @@ fun Editar(
                         onClick = { isNota = false },
                         colors = RadioButtonDefaults.colors()
                     )
-                    Text("Tarea")
+                    Text(stringResource(id = R.string.tarea))
                 }
             }
 
@@ -156,7 +158,7 @@ fun Editar(
             TextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Título") },
+                label = { Text(stringResource(id = R.string.titulo)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -166,7 +168,7 @@ fun Editar(
                 TextField(
                     value = content,
                     onValueChange = { content = it },
-                    label = { Text("Contenido de la Nota") },
+                    label = { Text(stringResource(id = R.string.contenido_de_la_nota)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
@@ -219,13 +221,13 @@ fun Editar(
                 OutlinedTextField(
                     value = dueDate.toString(),
                     onValueChange = {},
-                    label = { Text("Fecha de Vencimiento") },
+                    label = { Text(stringResource(id = R.string.fecha_de_vencimiento)) },
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { showDatePickerDialog = true }) {
                             Icon(
                                 painter = painterResource(id = android.R.drawable.ic_menu_my_calendar),
-                                contentDescription = "Seleccionar fecha"
+                                contentDescription = stringResource(id = R.string.seleccionar_fecha)
                             )
                         }
                     },
@@ -235,7 +237,7 @@ fun Editar(
                 OutlinedTextField(
                     value = dueTime.toString(),
                     onValueChange = {},
-                    label = { Text("Hora de Vencimiento") },
+                    label = { Text(stringResource(id = R.string.hora_de_vencimiento)) },
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = {
@@ -253,7 +255,7 @@ fun Editar(
                         }) {
                             Icon(
                                 painter = painterResource(id = android.R.drawable.ic_menu_recent_history),
-                                contentDescription = "Seleccionar hora"
+                                contentDescription = stringResource(id = R.string.seleccionar_hora)
                             )
                         }
                     },
@@ -263,7 +265,7 @@ fun Editar(
                 TextField(
                     value = content,
                     onValueChange = { content = it },
-                    label = { Text("Descripción") },
+                    label = { Text(stringResource(id = R.string.descripcion)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
@@ -332,7 +334,7 @@ fun Editar(
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Guardar")
+                Text(stringResource(id = R.string.guardar))
             }
 
         }

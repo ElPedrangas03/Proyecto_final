@@ -10,8 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.proyectofinal.R
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,7 +27,7 @@ fun ItemLayout(navController: NavController, tareasNotasViewModel: TareasNotasVi
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Detalles") }, navigationIcon = {
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.detalles)) }, navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
             }
@@ -40,17 +42,17 @@ fun ItemLayout(navController: NavController, tareasNotasViewModel: TareasNotasVi
             item?.let {
                 when (it) {
                     is Item.Tarea -> {
-                        Text("Título: ${it.titulo}", style = MaterialTheme.typography.headlineSmall)
-                        Text("Fecha: ${it.fecha}", style = MaterialTheme.typography.bodyMedium)
-                        Text("Descripción: ${it.descripcion}", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(id = R.string.titulo)+": ${it.titulo}", style = MaterialTheme.typography.headlineSmall)
+                        Text(stringResource(R.string.fecha)+": ${it.fecha}", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.descripcion)+": ${it.descripcion}", style = MaterialTheme.typography.bodyMedium)
                     }
                     is Item.Nota -> {
-                        Text("Título: ${it.titulo}", style = MaterialTheme.typography.headlineSmall)
-                        Text("Contenido: ${it.contenido}", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(id = R.string.titulo)+": ${it.titulo}", style = MaterialTheme.typography.headlineSmall)
+                        Text(stringResource(id = R.string.contenido)+": ${it.contenido}", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             } ?: run {
-                Text("Elemento no encontrado", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.elemento_no_encontrado), style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

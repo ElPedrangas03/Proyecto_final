@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -36,7 +37,7 @@ fun AppNavigation() {
     val tareasNotasViewModel: TareasNotasViewModel = viewModel() // Instancia compartida del ViewModel
 
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Tareas", "Notas")
+    val tabs = listOf(stringResource(id = R.string.tarea)+"s", stringResource(id = R.string.nota)+"s")
 
     NavHost(
         navController = navController,

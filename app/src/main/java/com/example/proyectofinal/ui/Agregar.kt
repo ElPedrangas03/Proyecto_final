@@ -1,14 +1,22 @@
 package com.example.proyectofinal.ui
 
 import android.app.TimePickerDialog
+import android.graphics.Bitmap
 import android.icu.util.Calendar
+import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -22,18 +30,32 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.net.toFile
+import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.proyectofinal.R
 import com.example.proyectofinal.data.Nota
 import com.example.proyectofinal.data.Tarea
+
 
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -58,6 +80,17 @@ fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
     var isButtonEnabled by remember { mutableStateOf(true) }
     var isNavigating by remember { mutableStateOf(false) }
     var shouldResetFields by remember { mutableStateOf(true) }
+
+    // Estado para manejar la imagen seleccionada
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Mostrar la imagen ampliada con zoom
+    if (selectedImageUri != null) {
+        FullscreenZoomableImageDialog(
+            imageUri = selectedImageUri!!.toString(),
+            onDismiss = { selectedImageUri = null }
+        )
+    }
 
 
     Scaffold(
@@ -197,33 +230,25 @@ fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
                                 viewModel.updateImagesUris(uniqueUris)
                             }
                         )
-                        viewModel.imagesUris.forEach { uri ->
-                            Box(
-                                modifier = Modifier
-                                    .padding(5.dp)
-                            ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context).data(uri)
-                                        .crossfade(enable = true).build(),
-                                    contentDescription = "",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(120.dp)
-                                        .padding(start = 5.dp, end = 5.dp, top = 10.dp)
-                                )
-                                IconButton(
-                                    onClick = { viewModel.removeImageUri(uri) },
-                                    modifier = Modifier.align(Alignment.TopEnd)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Eliminar imagen",
-                                        tint = Color.Red
-                                    )
-                                }
-                            }
-                        }
+                        VideoView(
+                            imagesUris = viewModel.imagesUris,
+                            onImagesChanged = { newUris -> viewModel.updateImagesUris(newUris) }
+                        )
+                        audio(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
+                            val UniqueUris =  (viewModel.imagesUris + newUris).distinct()
+                            viewModel.updateImagesUris(UniqueUris)
+                        })
+
                     }
+
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    PhotoGrid(
+                        imagesUris = viewModel.imagesUris,
+                        onImageClick = { selectedImageUri = it },
+                        onImageRemove = { viewModel.removeImageUri(it) }
+                    )
                 }
             } else {
                 OutlinedTextField(
@@ -299,33 +324,25 @@ fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
                                 viewModel.updateImagesUris(uniqueUris)
                             }
                         )
-                        viewModel.imagesUris.forEach { uri ->
-                            Box(
-                                modifier = Modifier
-                                    .padding(5.dp)
-                            ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context).data(uri)
-                                        .crossfade(enable = true).build(),
-                                    contentDescription = "",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(120.dp)
-                                        .padding(start = 5.dp, end = 5.dp, top = 10.dp)
-                                )
-                                IconButton(
-                                    onClick = { viewModel.removeImageUri(uri) },
-                                    modifier = Modifier.align(Alignment.TopEnd)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Eliminar imagen",
-                                        tint = Color.Red
-                                    )
-                                }
-                            }
-                        }
+                        VideoView(
+                            imagesUris = viewModel.imagesUris,
+                            onImagesChanged = { newUris -> viewModel.updateImagesUris(newUris) }
+                        )
+                        audio(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
+                            val UniqueUris =  (viewModel.imagesUris + newUris).distinct()
+                            viewModel.updateImagesUris(UniqueUris)
+                        })
                     }
+
+
+                }
+                // Mostrar imágenes en un Grid con eliminación
+                Box(modifier = Modifier.weight(1f)) {
+                    PhotoGrid(
+                        imagesUris = viewModel.imagesUris,
+                        onImageClick = { selectedImageUri = it },
+                        onImageRemove = { viewModel.removeImageUri(it) }
+                    )
                 }
             }
 
@@ -392,3 +409,301 @@ fun DatePickerModal(
         }
     }
 }
+/*
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PhotoGrid(
+    imagesUris: List<Uri>,
+    onImageClick: (Uri) -> Unit,
+    onImageRemove: ((Uri) -> Unit)? = null // Permitir eliminación solo si se proporciona esta función
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3), // Número fijo de columnas (3 por fila)
+        modifier = Modifier.padding(8.dp),
+        content = {
+            items(imagesUris.size) { index ->
+                val imageUri = imagesUris[index]
+                Box(modifier = Modifier.padding(4.dp)) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUri)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp) // Tamaño fijo para las miniaturas
+                            .clickable { onImageClick(imageUri) }, // Acción al hacer clic
+                        contentScale = ContentScale.Crop // Recorta la imagen para ajustarla
+                    )
+
+                    // Mostrar botón de eliminación si se proporciona la función
+                    if (onImageRemove != null) {
+                        IconButton(
+                            onClick = { onImageRemove(imageUri) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Eliminar imagen",
+                                tint = Color.Red
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    )
+}
+*/
+/*@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PhotoGrid(
+    imagesUris: List<Uri>,
+    onImageClick: (Uri) -> Unit,
+    onImageRemove: ((Uri) -> Unit)? = null
+) {
+    var selectedVideoUri by remember { mutableStateOf<Uri?>(null) }
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3), // Número fijo de columnas (3 por fila)
+        modifier = Modifier.padding(8.dp),
+        content = {
+            items(imagesUris.size) { index ->
+                val imageUri = imagesUris[index]
+                val isVideo = imageUri.toString().contains("video") || imageUri.toString().endsWith(".mp4")
+
+                Box(modifier = Modifier.padding(4.dp)) {
+                    if (isVideo) {
+                        // Mostrar ícono de video y abrir el reproductor en pantalla completa al hacer clic
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clickable { selectedVideoUri = imageUri }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Reproducir video",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    } else {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(imageUri)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp) // Tamaño fijo para las miniaturas
+                                .clickable { onImageClick(imageUri) }, // Acción al hacer clic
+                            contentScale = ContentScale.Crop // Recorta la imagen para ajustarla
+                        )
+                    }
+
+                    // Mostrar botón de eliminación si se proporciona la función
+                    if (onImageRemove != null) {
+                        IconButton(
+                            onClick = { onImageRemove(imageUri) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Eliminar imagen",
+                                tint = Color.Red
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    // Mostrar el diálogo de video a pantalla completa si se selecciona un video
+    if (selectedVideoUri != null) {
+        FullscreenVideoDialog(videoUri = selectedVideoUri!!, onDismiss = { selectedVideoUri = null })
+    }
+}
+
+
+@Composable
+fun FullscreenVideoDialog(videoUri: Uri, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            AndroidView(
+                factory = { context ->
+                    android.widget.VideoView(context).apply {
+                        setVideoURI(videoUri)
+                        setOnPreparedListener {
+                            it.isLooping = false // No hacer loop, reproducir solo una vez
+                            start() // Iniciar la reproducción
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+
+            // Botón para cerrar
+            IconButton(
+                onClick = { onDismiss() },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+            }
+        }
+    }
+}*/
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PhotoGrid(
+    imagesUris: List<Uri>,
+    onImageClick: (Uri) -> Unit,
+    onImageRemove: ((Uri) -> Unit)? = null
+) {
+    var selectedVideoUri by remember { mutableStateOf<Uri?>(null) }
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3), // Número fijo de columnas (3 por fila)
+        modifier = Modifier.padding(8.dp),
+        content = {
+            items(imagesUris.size) { index ->
+                val imageUri = imagesUris[index]
+                val isVideo = imageUri.toString().contains("video") || imageUri.toString().endsWith(".mp4")
+
+                Box(modifier = Modifier.padding(4.dp)) {
+                    if (isVideo) {
+                        // Mostrar miniatura del video con un ícono de play
+                        val context = LocalContext.current
+                        val thumbnail: Bitmap? = remember(imageUri) {
+                            ThumbnailUtils.createVideoThumbnail(
+                                imageUri.toFile().path,
+                                MediaStore.Images.Thumbnails.MINI_KIND
+                            )
+                        }
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clickable { selectedVideoUri = imageUri }
+                        ) {
+                            if (thumbnail != null) {
+                                androidx.compose.foundation.Image(
+                                    bitmap = thumbnail.asImageBitmap(),
+                                    contentDescription = "Miniatura del video",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Reproducir video",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    } else {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(imageUri)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp) // Tamaño fijo para las miniaturas
+                                .clickable { onImageClick(imageUri) }, // Acción al hacer clic
+                            contentScale = ContentScale.Crop // Recorta la imagen para ajustarla
+                        )
+                    }
+
+                    // Mostrar botón de eliminación si se proporciona la función
+                    if (onImageRemove != null) {
+                        IconButton(
+                            onClick = { onImageRemove(imageUri) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Eliminar imagen",
+                                tint = Color.Red
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    // Mostrar el diálogo de video a pantalla completa si se selecciona un video
+    if (selectedVideoUri != null) {
+        FullscreenVideoDialog(videoUri = selectedVideoUri!!, onDismiss = { selectedVideoUri = null })
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+fun FullscreenVideoDialog(videoUri: Uri, onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false) // Configurar el diálogo para usar el ancho completo de la pantalla
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black) // Añadir un fondo negro para mejorar la visibilidad del video
+        ) {
+            val context = LocalContext.current
+            val exoPlayer = remember { ExoPlayer.Builder(context).build().apply { setMediaItem(MediaItem.fromUri(videoUri)) } }
+
+            DisposableEffect(
+                AndroidView(
+                    factory = {
+                        PlayerView(context).apply {
+                            player = exoPlayer
+                            useController = true // Mostrar los controles de reproducción (play, pausa, etc.)
+                            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL // Ajustar el modo de redimensionamiento para pantalla completa
+                            exoPlayer.prepare()
+                            exoPlayer.playWhenReady = true
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            ) {
+                onDispose {
+                    exoPlayer.release()
+                }
+            }
+
+            // Botón para cerrar
+            IconButton(
+                onClick = {
+                    exoPlayer.stop()
+                    onDismiss()
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+            }
+        }
+    }
+}
+

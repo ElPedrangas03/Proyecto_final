@@ -18,6 +18,7 @@
     <string name="descripcion">Descripción</string>
     <string name="guardar">Guardar</string>
     <string name="tomar_foto">Tomar foto</string>
+    <string name="tomar_video">Tomar video</string>
     <string name="seleccionar_archivo">Seleccionar archivo</string>
     <string name="editar_tarea_nota">Editar Tarea/Nota</string>
     <string name="cancelar">Cancelar</string>

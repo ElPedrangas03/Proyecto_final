@@ -234,10 +234,10 @@ fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
                             imagesUris = viewModel.imagesUris,
                             onImagesChanged = { newUris -> viewModel.updateImagesUris(newUris) }
                         )
-                        audio(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
-                            val UniqueUris =  (viewModel.imagesUris + newUris).distinct()
-                            viewModel.updateImagesUris(UniqueUris)
-                        })
+//                        audio(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
+//                            val UniqueUris =  (viewModel.imagesUris + newUris).distinct()
+//                            viewModel.updateImagesUris(UniqueUris)
+//                        })
 
                     }
 
@@ -328,10 +328,10 @@ fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
                             imagesUris = viewModel.imagesUris,
                             onImagesChanged = { newUris -> viewModel.updateImagesUris(newUris) }
                         )
-                        audio(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
-                            val UniqueUris =  (viewModel.imagesUris + newUris).distinct()
-                            viewModel.updateImagesUris(UniqueUris)
-                        })
+//                        audio(imagesUris = viewModel.imagesUris, onImagesChanged = { newUris ->
+//                            val UniqueUris =  (viewModel.imagesUris + newUris).distinct()
+//                            viewModel.updateImagesUris(UniqueUris)
+//                        })
                     }
 
 

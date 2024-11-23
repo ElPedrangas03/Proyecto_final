@@ -73,7 +73,7 @@ fun AppNavigation() {
             ItemLayout(navController, tareasNotasViewModel, itemTitulo)
         }
         composable("notificaciones") {
-            notificaciones(navController)
+            notificaciones(navController, tareasNotasViewModel)
         }
     }
 }

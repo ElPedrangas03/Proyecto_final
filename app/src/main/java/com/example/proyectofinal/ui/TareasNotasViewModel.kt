@@ -245,4 +245,35 @@ class TareasNotasViewModel(
         return uris
     }
 
+    fun agregarNotificacion(fecha: LocalDate, hora: LocalTime) {
+        uiState = uiState.copy(
+            notificaciones = uiState.notificaciones + Pair(fecha, hora)
+        )
+    }
+
+    fun eliminarNotificacion(index: Int) {
+        uiState = uiState.copy(
+            notificaciones = uiState.notificaciones.toMutableList().apply {
+                removeAt(index)
+            }
+        )
+    }
+
+    fun editarNotificacionFecha(index: Int, nuevaFecha: LocalDate) {
+        uiState = uiState.copy(
+            notificaciones = uiState.notificaciones.toMutableList().apply {
+                this[index] = Pair(nuevaFecha, this[index].second) // Actualiza solo la fecha, mantiene la hora actual
+            }
+        )
+    }
+
+    fun editarNotificacionHora(index: Int, nuevaHora: LocalTime) {
+        uiState = uiState.copy(
+            notificaciones = uiState.notificaciones.toMutableList().apply {
+                this[index] = Pair(this[index].first, nuevaHora) // Mantener la fecha, actualizar la hora
+            }
+        )
+    }
+
+
 }

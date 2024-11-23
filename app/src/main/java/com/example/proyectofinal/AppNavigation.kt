@@ -30,6 +30,7 @@ import com.example.proyectofinal.ui.Buscar
 import com.example.proyectofinal.ui.Editar
 import com.example.proyectofinal.ui.ItemLayout
 import com.example.proyectofinal.ui.TopBar
+import com.example.proyectofinal.ui.notificaciones
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -70,6 +71,9 @@ fun AppNavigation() {
         composable("item/{itemTitulo}") { backStackEntry ->
             val itemTitulo = backStackEntry.arguments?.getString("itemTitulo") ?: ""
             ItemLayout(navController, tareasNotasViewModel, itemTitulo)
+        }
+        composable("notificaciones") {
+            notificaciones(navController)
         }
     }
 }

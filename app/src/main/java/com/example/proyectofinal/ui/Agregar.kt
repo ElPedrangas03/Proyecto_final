@@ -2,6 +2,7 @@ package com.example.proyectofinal.ui
 
 import android.app.TimePickerDialog
 import android.graphics.Bitmap
+import android.graphics.drawable.Icon
 import android.icu.util.Calendar
 import android.media.ThumbnailUtils
 import android.net.Uri
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
@@ -111,6 +113,15 @@ fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
 
                     }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                    }
+                },
+                actions = {
+                    if (!isNota) { // Agregar el botón de notificaciones solo si es una nota
+                        IconButton(onClick = {
+                            navController.navigate("notificaciones")
+                        }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                        }
                     }
                 }
             )
@@ -706,4 +717,3 @@ fun FullscreenVideoDialog(videoUri: Uri, onDismiss: () -> Unit) {
         }
     }
 }
-

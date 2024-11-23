@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -123,6 +124,15 @@ fun Editar(
                         navController.navigateUp()
                     }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                    }
+                },
+                actions = {
+                    if (!isNota) { // Agregar el botón de notificaciones solo si es una nota
+                        IconButton(onClick = {
+                            navController.navigate("notificaciones")
+                        }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                        }
                     }
                 }
             )

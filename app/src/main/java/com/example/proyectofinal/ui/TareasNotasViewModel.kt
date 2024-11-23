@@ -17,6 +17,8 @@ import com.example.proyectofinal.data.Nota
 import com.example.proyectofinal.data.NotaRepository
 import com.example.proyectofinal.data.Tarea
 import com.example.proyectofinal.data.TareaRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.time.LocalDate

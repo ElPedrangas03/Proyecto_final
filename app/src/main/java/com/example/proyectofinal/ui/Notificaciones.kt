@@ -32,7 +32,8 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun notificaciones(navController: NavController, viewModel: TareasNotasViewModel) {
-    val reminders = viewModel.uiState.notificaciones
+    // Usamos directamente la lista de notificaciones del ViewModel
+    val reminders = viewModel.notifications
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var tempDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -71,6 +72,7 @@ fun notificaciones(navController: NavController, viewModel: TareasNotasViewModel
             )
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Mostrar las notificaciones existentes
             reminders.forEachIndexed { index, (date, time) ->
                 key(index) {
                     Card(
@@ -131,6 +133,7 @@ fun notificaciones(navController: NavController, viewModel: TareasNotasViewModel
                                 }
                             }
 
+                            // Menú desplegable para editar
                             var expanded by remember { mutableStateOf(false) }
                             Box(
                                 modifier = Modifier
@@ -169,6 +172,7 @@ fun notificaciones(navController: NavController, viewModel: TareasNotasViewModel
                                 }
                             }
 
+                            // Botón para eliminar la notificación
                             IconButton(
                                 onClick = { viewModel.eliminarNotificacion(index) },
                                 modifier = Modifier
@@ -187,11 +191,12 @@ fun notificaciones(navController: NavController, viewModel: TareasNotasViewModel
             }
         }
 
+        // Diálogo para seleccionar la fecha
         if (showDatePicker) {
             val context = LocalContext.current
             val calendar = Calendar.getInstance()
 
-            val datePickerDialog = DatePickerDialog(
+            DatePickerDialog(
                 context,
                 { _, year, month, dayOfMonth ->
                     val nuevaFecha = LocalDate.of(year, month + 1, dayOfMonth)
@@ -203,30 +208,24 @@ fun notificaciones(navController: NavController, viewModel: TareasNotasViewModel
                         tempDate = nuevaFecha
                         showTimePicker = true
                     }
-                    editingIndex = null
                     showDatePicker = false
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
-            )
-
-            // Listener para manejar la cancelación del diálogo
-            datePickerDialog.setOnCancelListener {
-                editingIndex = null // Resetear índice
-                showDatePicker = false // Cerrar diálogo de fecha
-                showTimePicker = false // Cancelar proceso completo
-            }
-
-            // Mostrar el diálogo
-            datePickerDialog.show()
+            ).apply {
+                setOnCancelListener {
+                    showDatePicker = false // Restablecer el estado al cancelar
+                }
+            }.show()
         }
 
+        // Diálogo para seleccionar la hora
         if (showTimePicker) {
             val context = LocalContext.current
             val calendar = Calendar.getInstance()
 
-            val timePickerDialog = TimePickerDialog(
+            TimePickerDialog(
                 context,
                 { _, hourOfDay, minute ->
                     val nuevaHora = LocalTime.of(hourOfDay, minute)
@@ -240,23 +239,26 @@ fun notificaciones(navController: NavController, viewModel: TareasNotasViewModel
                         }
                     }
                     tempDate = null
-                    editingIndex = null
                     showTimePicker = false
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
                 true
-            )
+            ).apply {
+                setOnCancelListener {
+                    showTimePicker = false // Restablecer el estado al cancelar
+                }
+            }.show()
+        }
 
-            // Listener para manejar la cancelación del diálogo
-            timePickerDialog.setOnCancelListener {
-                editingIndex = null // Resetear índice
-                tempDate = null // Limpiar fecha temporal
-                showTimePicker = false // Cerrar diálogo de hora
+        // Limpieza al desmontar el Composable
+        DisposableEffect(Unit) {
+            onDispose {
+                showDatePicker = false
+                showTimePicker = false
+                isEditing = false
+                editingIndex = null
             }
-
-            // Mostrar el diálogo
-            timePickerDialog.show()
         }
     }
 }

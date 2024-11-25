@@ -54,6 +54,7 @@ fun PrincipalLayout(
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val isLargeScreen = screenWidth > 600
+    tareasNotasViewModel.clearNotificaciones()
 
     Scaffold(
         topBar = {

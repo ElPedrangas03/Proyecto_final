@@ -84,4 +84,5 @@ dependencies {
     implementation("androidx.room:room-runtime:2.5.0")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.room:room-ktx:2.5.0")
-    implementation("io.coil-kt:coil-compose:2.2.2")}
+    implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation("com.google.code.gson:gson:2.8.9")}

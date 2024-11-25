@@ -17,6 +17,8 @@ import com.example.proyectofinal.data.Nota
 import com.example.proyectofinal.data.NotaRepository
 import com.example.proyectofinal.data.Tarea
 import com.example.proyectofinal.data.TareaRepository
+import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -91,15 +93,17 @@ class TareasNotasViewModel(
         }
     }
 
-    fun agregarTarea(titulo: String, fecha: LocalDateTime, fechaCreacion: LocalDateTime, descripcion: String, imagenes: List<Uri>) {
+    fun agregarTarea(titulo: String, fecha: LocalDateTime, fechaCreacion: LocalDateTime, descripcion: String, imagenes: List<Uri>, recordatorios: List<Pair<LocalDate, LocalTime>>) {
         viewModelScope.launch {
             val multimediaJson = convertUrisToJson(imagenes)
+            val recordatoriosJson = convertRecordatoriosToJson(recordatorios)
             val tarea = Tarea(
                 titulo = titulo,
                 fecha = fecha.toString(),
                 fechaCreacion = fechaCreacion.toString(),
                 descripcion = descripcion,
-                multimedia = multimediaJson
+                multimedia = multimediaJson,
+                recordatorios = recordatoriosJson
             )
             tareaRepository.insertTarea(tarea)
             actualizarTareas()
@@ -245,35 +249,50 @@ class TareasNotasViewModel(
         return uris
     }
 
+
+    var notifications by mutableStateOf<List<Pair<LocalDate, LocalTime>>>(emptyList())
+
     fun agregarNotificacion(fecha: LocalDate, hora: LocalTime) {
-        uiState = uiState.copy(
-            notificaciones = uiState.notificaciones + Pair(fecha, hora)
-        )
+        notifications = notifications + Pair(fecha, hora)
     }
 
     fun eliminarNotificacion(index: Int) {
-        uiState = uiState.copy(
-            notificaciones = uiState.notificaciones.toMutableList().apply {
-                removeAt(index)
-            }
-        )
+        notifications = notifications.toMutableList().apply {
+            removeAt(index)
+        }
     }
 
     fun editarNotificacionFecha(index: Int, nuevaFecha: LocalDate) {
-        uiState = uiState.copy(
-            notificaciones = uiState.notificaciones.toMutableList().apply {
-                this[index] = Pair(nuevaFecha, this[index].second) // Actualiza solo la fecha, mantiene la hora actual
-            }
-        )
+        notifications = notifications.toMutableList().apply {
+            this[index] = Pair(nuevaFecha, this[index].second)
+        }
     }
 
     fun editarNotificacionHora(index: Int, nuevaHora: LocalTime) {
-        uiState = uiState.copy(
-            notificaciones = uiState.notificaciones.toMutableList().apply {
-                this[index] = Pair(this[index].first, nuevaHora) // Mantener la fecha, actualizar la hora
-            }
-        )
+        notifications = notifications.toMutableList().apply {
+            this[index] = Pair(this[index].first, nuevaHora)
+        }
     }
+
+    fun clearNotificaciones() {
+        notifications = emptyList()
+    }
+
+    fun convertRecordatoriosToJson(recordatorios: List<Pair<LocalDate, LocalTime>>): String {
+        val gson = Gson()
+        val listaFormateada = recordatorios.map { listOf(it.first.toString(), it.second.toString()) }
+        return gson.toJson(listaFormateada)
+    }
+
+    fun convertJsonToRecordatorios(json: String): List<Pair<LocalDate, LocalTime>> {
+        val gson = Gson()
+        // Leer el JSON como una lista de listas de dos elementos (fecha y hora en String)
+        val type = object : TypeToken<List<List<String>>>() {}.type
+        val listaFormateada: List<List<String>> = gson.fromJson(json, type)
+        // Convertir la lista de listas a pares de LocalDate y LocalTime
+        return listaFormateada.map { Pair(LocalDate.parse(it[0]), LocalTime.parse(it[1])) }
+    }
+
 
 
 }

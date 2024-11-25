@@ -146,7 +146,8 @@ fun Agregar(navController: NavController, viewModel: TareasNotasViewModel) {
                                     fecha = dueDateTime,
                                     fechaCreacion = LocalDateTime.now(),
                                     descripcion = viewModel.content,
-                                    imagenes = viewModel.imagesUris
+                                    imagenes = viewModel.imagesUris,
+                                    recordatorios = viewModel.notifications
                                 )
                             }
                             isNavigating = true

@@ -119,12 +119,22 @@ fun Editar(
         }
     }
 
+    /*
+    tareaNota.let { notaTarea ->
+        when (notaTarea) {
+            is Tarea -> tareasNotasViewModel.procesarTarea(notaTarea)
+            is Nota -> tareasNotasViewModel.procesarNota(notaTarea)
+            else -> {}
+        }
+    }*/
+
     if (tareaNota == null) {
         tareasNotasViewModel.resetearCampos()
         navController.popBackStack()
         return
     }
-
+    ///////////////////
+    /*
     tareaNota.let { notaTarea ->
         when (notaTarea) {
             is Tarea -> tareasNotasViewModel.procesarTarea(notaTarea)
@@ -132,6 +142,8 @@ fun Editar(
             else -> {}
         }
     }
+
+     */
 
 
     val title by tareasNotasViewModel::title

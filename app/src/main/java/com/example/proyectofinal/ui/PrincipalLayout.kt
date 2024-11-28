@@ -281,8 +281,8 @@ fun Content(
                                 tareasNotasViewModel.completarTarea(item)
                             },
                             onEdit = {
-                                // Cargar notificaciones si están vacías
-                                // Solo inicializa si están vacías
+                                tareasNotasViewModel.procesarTarea(item)
+
                                 if (tareasNotasViewModel.notifications.isEmpty()) {
                                     tareasNotasViewModel.notifications = tareasNotasViewModel.convertJsonToAlarmItems(item.recordatorios)
                                     tareasNotasViewModel.originalNotifications = tareasNotasViewModel.convertJsonToAlarmItems(item.recordatorios)
@@ -302,6 +302,7 @@ fun Content(
                                 navController.navigate("item/${item.titulo}")
                             },
                             onEdit = {
+                                tareasNotasViewModel.procesarNota(item)
                                 navController.navigate("itemEditar/${item.id}")
                             },
                             onDelete = {

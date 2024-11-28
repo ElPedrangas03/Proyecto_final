@@ -576,11 +576,7 @@ fun PhotoGrid(
                                         contentDescription = "Reproducir audio"
                                     )
                                 }
-//                                IconButton(onClick = {
-//                                    onImageRemove?.invoke(audioUri)
-//                                }) {
-//                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar audio", tint = Color.Red)
-//                                }
+
                             }
                         }
                         else -> {

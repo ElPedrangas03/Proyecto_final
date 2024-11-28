@@ -133,17 +133,12 @@ fun Editar(
         navController.popBackStack()
         return
     }
-    ///////////////////
-    /*
-    tareaNota.let { notaTarea ->
-        when (notaTarea) {
-            is Tarea -> tareasNotasViewModel.procesarTarea(notaTarea)
-            is Nota -> tareasNotasViewModel.procesarNota(notaTarea)
-            else -> {}
-        }
+    if (selectedImageUri != null) {
+        FullscreenZoomableImageDialog(
+            imageUri = selectedImageUri.toString()!!,
+            onDismiss = { selectedImageUri = null }
+        )
     }
-
-     */
 
 
     val title by tareasNotasViewModel::title
@@ -509,6 +504,8 @@ fun DatePickerModalEditar(
         }
     }
 }
+
+
 
 
 

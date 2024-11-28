@@ -70,7 +70,7 @@ fun CollectionGalleryView(imagesUris: List<Uri>, onImagesChanged: (List<Uri>) ->
         modifier = Modifier
             .border(
                 width = 2.dp, // Grosor del borde
-                color = Color.Black, // Color del borde
+                color = MaterialTheme.colorScheme.onBackground, // Color del borde
                 shape = RoundedCornerShape(16.dp) // Bordes redondeados de 16.dp de radio
             )
             .padding(4.dp)
